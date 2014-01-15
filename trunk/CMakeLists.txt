@@ -1,0 +1,7 @@
+project(projet CXX)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+ADD_DEFINITIONS(-std=c++0x)
+ADD_EXECUTABLE(client client.cc)
+ADD_EXECUTABLE(server server.cc)
+TARGET_LINK_LIBRARIES(client -Wl,--copy-dt-needed-entries -lnetez ${sdl_PREFIX}/lib/libSDL.a pthread dl)
+TARGET_LINK_LIBRARIES(server -Wl,--copy-dt-needed-entries -lnetez)
