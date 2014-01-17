@@ -1,133 +1,97 @@
-#include "proto.hh"
-#include <string>
 #include <iostream>
-#include <SDL/SDL.h>
-#include "ecran.hpp"
+#include <cstring>
 
-using namespace std;
-using namespace netez;
+#include "proto.hh"
 
+struct session_on_client;
+namespace recherche
+{
+  using namespace std;
+  using namespace netez;
 
-struct session_on_client:public session_base{
-  enum state_t
-    {
-      state_connected,
-      state_logged
-    };
-  
-  state_t state=state_connected;
-  session_on_client(socket & io):session_base(io), state(state_connected)
+  struct session_on_client: public session_base
   {
-    sig_begin.connect(EZMETHOD(this,on_begin));
-    proto.QUIT.sig_recv.connect(EZMETHOD(this,do_QUIT));
-    proto.JOINED.sig_recv.connect(EZMETHOD(this, do_JOINED));
-    proto.NICK.sig_recv.connect(EZMETHOD(this, do_NICK));
-  }
+   
+    int joueur;
+    session_on_client(socket& io): session_base(io)
+    {
 
-  void do_QUIT(){
-    finish();
-  }
-
-  void on_begin(){}
-
-  void do_NICK(string s){
-    if(state == state_connected){
-      proto.NICK(s);
-      state=state_logged;
+      sig_begin.connect(EZMETHOD(this,on_begin));
+      proto.err.sig_recv.connect(EZMETHOD(this,do_err));
+      proto.okint.sig_recv.connect(EZMETHOD(this,do_okint));
+      proto.gagner.sig_recv.connect(EZMETHOD(this,do_gagner));
+      proto.perdu.sig_recv.connect(EZMETHOD(this,do_perdu));
+      proto.said.sig_recv.connect(EZMETHOD(this,do_said));
+      proto.afficher.sig_recv.connect(EZMETHOD(this,do_afficher));
+      proto.attendre.sig_recv.connect(EZMETHOD(this,do_attendre));
+      proto.jouer.sig_recv.connect(EZMETHOD(this,do_jouer));      
+     
     }
-    else cout<<"vous etes deja connecter"<<endl;
-  }
 
-  void do_quit(){
-    proto.QUIT();
-  }
+    void do_err(string error){
+        cerr<<error<<endl;
+    }
+   
+    void do_okint(int j){
 
-  void do_JOINED(string s){   
-    if(state==state_logged)
+        cout<<"Votre adversaire est connecte!"<<endl;
+        joueur=j;
+       
+    }
+   
+    void do_gagner(string mot,string nom){
+      system ("clear");
+      cout<<nom << " vous avez gagne, le mot etait : "<<mot<<endl;
+      finish();
+    }
+   
+    void do_perdu(string mot,string nom){
+      system ("clear");
+      cout<<nom <<" vous avez perdu, le mot etait : "<<mot<<endl;
+      finish();
+    }
 
-      cout<<"server : "<<s<<" joined the chat"<<endl; 
-  }
+    void do_said(string s){
+     
+      cout<<"\nVotre adversaire a joué : "<<s<<endl;
+     
+    }
 
-};
+    void do_afficher(string lettresUtilisees, string encours){
+      system ("clear");
+      cout<<"Lettres utilisees : "<<lettresUtilisees<<endl;
+      cout<<encours<<endl;
 
-string strip( string & s){
-  size_t i = s.find_first_not_of(" \t");
-  if (i == string :: npos) 
-    return "";
-  size_t j = s.find_last_not_of(" \t");
-  return s.substr (i,j-i+1);
+
+    }
+   
+    void do_attendre(string nom){    
+      cout<<nom<<" veuillez attendre l'action de l'adversaire"<<endl;
+    }
+
+    void do_jouer(string nom){
+      string mot;
+      cout<<nom<<" que voulez vous entrer ? ";
+      cout.flush();
+        cin>>mot;
+        proto.say(mot,joueur);
+    }
+
+    void on_begin(){
+      system ("clear");
+      string nom;
+      cout<<"Quel est votre nom ? ";
+      cout.flush();
+      cin>>nom;
+      proto.nom(nom);
+    }
+
+  };
 }
 
-int main(int argc, char** argv)
-{
-  client<session_on_client> cli(argc, argv);
-  string line;
-  while ( getline (cin , line ))
-    {
-      istringstream is(line );
-      string cmd;
-      is >> cmd;
-      string rest, nick;
-      getline (is , rest);
-      if(cmd == "NICK"){
+int main(int argc, char* argv[]){
 
-	rest = strip(rest);
-	cli.session.do_NICK(rest);
-	
-      }
-      if(cmd=="QUIT")
-	break;
-    
-    }
-
-  SDL_Event event; // evenements (pour la gestion des touches clavier) 
-  bool continuer = true;
-
-  ecran zone2(800, 500), zone_affichage(640,480); 
-
-  // permet de simuler un timer 
-  int tempsPrecedent = 0, tempsActuel = 0; 
-  //espace de temps entre deux passages de boucles 
-  int intervalle = 10; 
-
-  while (continuer)
-    {
-      
-      SDL_PollEvent(&event); 
-
-      switch(event.type)
-	{
-	case SDL_QUIT: return false;	
-	case SDL_KEYDOWN: 
-	  switch(event.key.keysym.sym) {
-	  case SDLK_RIGHT: 
-	    break;
-	  case SDLK_LEFT:
-	    
-
-	    break;
-	  }
-	  break;
-
-	}
-      zone_affichage.vider();      
-      zone_affichage.peindre(0,0,5,640);
-      zone_affichage.peindre(0,0,480,5);
-      zone_affichage.peindre(475,0,5,640);
-      zone_affichage.flip(); 
-
-
-
-      tempsActuel = SDL_GetTicks(); 
-
-      if (tempsActuel - tempsPrecedent < intervalle)
-	SDL_Delay(intervalle - (tempsActuel - tempsPrecedent));
-  
-      tempsPrecedent = tempsActuel;
-    }
-
-  cli.session.do_quit();
-  cli.join();
-
+  netez::client<recherche::session_on_client> client(argc, argv);
+  client.join();
   return 0;
 }
