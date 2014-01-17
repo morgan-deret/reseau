@@ -7,8 +7,6 @@
 #include <fstream>
 
 
-
-
 namespace recherche{
   using namespace std;
   using namespace netez;

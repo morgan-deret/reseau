@@ -1,5 +1,5 @@
-#ifndef _PENDUEZ_HH_
-#define _PENDUEZ_HH_
+#ifndef _RECHERCHE_HH_
+#define _RECHERCHE_HH_
 
 #include "netez.hh"
 #include <cstdio>

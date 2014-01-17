@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstring>
-
 #include "proto.hh"
 
 struct session_on_client;
@@ -29,25 +28,29 @@ namespace recherche
     }
 
     void do_err(string error){
-        cerr<<error<<endl;
+      cerr<<error<<endl;
     }
    
     void do_okint(int j){
 
-        cout<<"Votre adversaire est connecte!"<<endl;
-        joueur=j;
+      cout<<"Votre adversaire est connecte!"<<endl;
+      joueur=j;
        
     }
    
     void do_gagner(string mot,string nom){
       system ("clear");
+      cout<<endl<<endl;
       cout<<nom << " vous avez gagne, le mot etait : "<<mot<<endl;
+      cout<<endl<<endl;
       finish();
     }
    
     void do_perdu(string mot,string nom){
       system ("clear");
+      cout<<endl<<endl;
       cout<<nom <<" vous avez perdu, le mot etait : "<<mot<<endl;
+      cout<<endl<<endl;
       finish();
     }
 
@@ -59,26 +62,31 @@ namespace recherche
 
     void do_afficher(string lettresUtilisees, string encours){
       system ("clear");
+      cout<<endl<<endl;
       cout<<"Lettres utilisees : "<<lettresUtilisees<<endl;
+      cout<<endl<<endl;
       cout<<encours<<endl;
 
 
     }
    
     void do_attendre(string nom){    
+      cout<<endl<<endl;
       cout<<nom<<" veuillez attendre l'action de l'adversaire"<<endl;
     }
 
     void do_jouer(string nom){
       string mot;
+      cout<<endl<<endl;
       cout<<nom<<" que voulez vous entrer ? ";
       cout.flush();
-        cin>>mot;
-        proto.say(mot,joueur);
+      cin>>mot;
+      proto.say(mot,joueur);
     }
 
     void on_begin(){
       system ("clear");
+      cout<<endl<<endl;
       string nom;
       cout<<"Quel est votre nom ? ";
       cout.flush();
